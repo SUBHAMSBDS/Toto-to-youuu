@@ -1,0 +1,78 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver - See Passenger Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        #map {
+            height: 400px;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        #refreshButton {
+            margin: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #refreshButton:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Driver - Passenger Location</h1>
+    <button id="refreshButton">Refresh Passenger Location</button>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([26.5177, 88.7191], 13);  // Default coordinates for Jalpaiguri
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let passengerMarker;
+
+        document.getElementById("refreshButton").addEventListener("click", function () {
+            fetch('/get_location')
+            .then(response => response.json())
+            .then(data => {
+                if (data.lat && data.lon) {
+                    // Center the map on the passenger's location
+                    map.setView([data.lat, data.lon], 15);
+
+                    // Add or update the passenger marker
+                    if (passengerMarker) {
+                        passengerMarker.setLatLng([data.lat, data.lon]);
+                    } else {
+                        passengerMarker = L.marker([data.lat, data.lon]).addTo(map).bindPopup('Passenger location').openPopup();
+                    }
+                } else {
+                    alert('No passenger location available.');
+                }
+            })
+            .catch(error => alert('Error fetching location.'));
+        });
+    </script>
+
+</body>
+</html>
